@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{name}}</title>
+</head>
+<body>
+<h1>{{name}}</h1>
+<img src="{{imageUrl}}" alt="{{name}}" style="width:200px;"><br>
+<p>속성: {{attribute}}</p>
+<p>타입: {{type}}</p>
+<p>레벨: {{level}}</p>
+<p>{{desc}}</p>
+
+<hr>
+<h2>댓글 목록</h2>
+
+{{#comments}}
+    <div style="border:1px solid #ccc; padding:10px; margin:5px;">
+        <strong>{{username}}</strong> - <em>{{createdAt}}</em><br>
+        {{content}}
+    </div>
+{{/comments}}
+
+{{^comments}}
+    <p>📭 댓글이 아직 없습니다.</p>
+{{/comments}}
+
+<hr>
+<h2>댓글 작성</h2>
+
+{{#isAuthenticated}}
+    <form method="post" action="/cards/{{id}}/comments">
+        <textarea name="content" rows="4" cols="50" required></textarea><br>
+        <button type="submit">댓글 등록</button>
+    </form>
+{{/isAuthenticated}}
+
+{{^isAuthenticated}}
+    <p>✍️ 댓글 작성을 하려면 <a href="/login">로그인</a>이 필요합니다.</p>
+{{/isAuthenticated}}
+<p>속성 테스트: {{attribute}}</p>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>카드 목록</title>
+</head>
+<body>
+<h1>유희왕 카드 목록</h1>
+
+{{#cards}}
+    <div style="border: 1px solid #ccc; padding: 10px; margin: 10px;">
+        <img src="{{imageUrl}}" alt="{{name}}" style="width: 150px;"><br>
+        <strong>{{name}}</strong><br>
+        <span>Type: {{type}}</span><br>
+        <span>{{desc}}</span>
+
+    </div>
+{{/cards}}
+{{^cards}}
+    <p>📭 카드 없음</p>
+{{/cards}}
+<h2>카드 디버깅 정보</h2>
+<pre>
+    {{#cards}}
+        {{.}}
+    {{/cards}}
+</pre>
+
+</body>
+</html>
