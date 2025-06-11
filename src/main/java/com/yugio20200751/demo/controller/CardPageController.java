@@ -1,0 +1,52 @@
+package com.yugio20200751.demo.controller;
+
+import com.yugio20200751.demo.domain.Card;
+import com.yugio20200751.demo.dto.CommentResponse;
+import com.yugio20200751.demo.service.CardService;
+import com.yugio20200751.demo.service.CommentService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.List;
+
+@Controller
+@RequiredArgsConstructor
+public class CardPageController {
+
+    private final CardService cardService;
+    private final CommentService commentService;
+
+
+    @GetMapping("/cards")
+    public String viewCards(Model model) {
+        List<Card> cards = cardService.getAllCards();
+        model.addAttribute("cards", cards);
+        return "cards";  // templates/cards.mustache 렌더링
+    }
+    @GetMapping("/cards/{id}")
+    public String viewCardDetail(@PathVariable Long id,
+                                 Model model,
+                                 Authentication authentication) {
+        Card card = cardService.getCardById(id)
+                .orElseThrow(() -> new RuntimeException("카드를 찾을 수 없습니다."));
+
+        List<CommentResponse> comments = commentService.getComments(id);
+
+        model.addAttribute("id", card.getId());
+        model.addAttribute("name", card.getName());
+        model.addAttribute("attribute", card.getAttribute());
+        model.addAttribute("type", card.getType());
+        model.addAttribute("level", card.getLevel());
+        model.addAttribute("desc", card.getDesc());
+        model.addAttribute("imageUrl", card.getImageUrl());
+        model.addAttribute("comments", comments);
+        model.addAttribute("isAuthenticated", authentication != null && authentication.isAuthenticated());
+
+        return "cardDetail"; // → templates/cardDetail.mustache
+    }
+
+}
