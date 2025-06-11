@@ -6,11 +6,12 @@ import com.yugio20200751.demo.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
+@Controller
 @RequiredArgsConstructor
 @RequestMapping("/api/cards/{cardId}/comments")
 public class CommentController {
@@ -19,13 +20,17 @@ public class CommentController {
 
     // 댓글 등록
     @PostMapping
-    public ResponseEntity<Void> addComment(@PathVariable Long cardId,
-                                           @RequestBody CommentRequest request,
-                                           Authentication authentication) {
+    public String addComment(@PathVariable Long cardId,
+                             @ModelAttribute CommentRequest request,
+                             Authentication authentication) {
+
         String username = authentication.getName();
         commentService.addComment(cardId, username, request);
-        return ResponseEntity.ok().build();
+
+        // 댓글 작성 후 카드 상세 페이지로 리다이렉트
+        return "redirect:/cards/" + cardId;
     }
+
 
     // 댓글 조회 (비회원도 가능)
     @GetMapping

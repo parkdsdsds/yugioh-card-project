@@ -38,9 +38,15 @@ public class CardPageController {
 
         model.addAttribute("id", card.getId());
         model.addAttribute("name", card.getName());
-        model.addAttribute("attribute", card.getAttribute());
+
+        String attribute = (card.getAttribute() != null && !card.getAttribute().isBlank())
+                ? card.getAttribute() : "정보 없음";
+        model.addAttribute("attribute", attribute);
+
+
         model.addAttribute("type", card.getType());
-        model.addAttribute("level", card.getLevel());
+        String level = (card.getLevel() != null) ? String.valueOf(card.getLevel()) : "정보 없음";
+        model.addAttribute("level", level);
         model.addAttribute("desc", card.getDesc());
         model.addAttribute("imageUrl", card.getImageUrl());
         model.addAttribute("comments", comments);
