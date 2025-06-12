@@ -41,11 +41,16 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/members", "/api/auth/**", "/api/cards/load").permitAll()
+                        // 회원가입/로그인(POST)은 모두 허용
+                        .requestMatchers(HttpMethod.POST, "/api/members", "/api/auth/**").permitAll()
+                        // 카드 목록, 카드 상세조회(GET)만 모두 허용
                         .requestMatchers(HttpMethod.GET, "/api/cards", "/api/cards/**", "/cards", "/cards/**").permitAll()
+                        // 로그인/에러 페이지는 모두 허용
                         .requestMatchers("/login", "/error").permitAll()
+                        // 그 외 모든 요청은 인증 필요!
                         .anyRequest().authenticated()
                 )
+
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
