@@ -34,7 +34,9 @@ public class CardPageController {
         Card card = cardService.getCardById(id)
                 .orElseThrow(() -> new RuntimeException("카드를 찾을 수 없습니다."));
 
-        List<CommentResponse> comments = commentService.getComments(id);
+        String loginUsername = (authentication != null) ? authentication.getName() : null;
+        List<CommentResponse> comments = commentService.getComments(id, loginUsername);
+
 
         model.addAttribute("id", card.getId());
         model.addAttribute("name", card.getName());

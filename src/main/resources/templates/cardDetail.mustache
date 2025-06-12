@@ -18,6 +18,11 @@
     <div style="border:1px solid #ccc; padding:10px; margin:5px;">
         <strong>{{username}}</strong> - <em>{{createdAt}}</em><br>
         {{content}}
+        {{#isMine}}
+            <!-- 본인 댓글만 수정/삭제 버튼 노출 -->
+            <button onclick="showEditForm({{id}}, '{{content}}')">수정</button>
+            <button onclick="deleteComment({{id}})">삭제</button>
+        {{/isMine}}
     </div>
 {{/comments}}
 
@@ -38,5 +43,40 @@
 {{^isAuthenticated}}
     <p>✍댓글 작성을 하려면 <a href="/login">로그인</a>이 필요합니다.</p>
 {{/isAuthenticated}}
+
+<script>
+    function deleteComment(commentId) {
+        if (!confirm("정말 삭제하시겠습니까?")) return;
+        fetch(`/api/cards/{{id}}/comments/` + commentId, {
+            method: 'DELETE',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'include'
+        })
+                .then(res => {
+                    if(res.ok) window.location.reload();
+                    else alert("삭제 실패");
+                });
+    }
+
+    function showEditForm(commentId, content) {
+        const newContent = prompt("댓글 수정", content);
+        if(newContent === null) return;
+        fetch(`/api/cards/{{id}}/comments/` + commentId, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'include',
+            body: JSON.stringify({content: newContent})
+        })
+                .then(res => {
+                    if(res.ok) window.location.reload();
+                    else alert("수정 실패");
+                });
+    }
+</script>
 </body>
 </html>

@@ -39,7 +39,7 @@ public class CommentService {
         commentRepository.save(comment);
     }
 
-    public List<CommentResponse> getComments(Long cardId) {
+    public List<CommentResponse> getComments(Long cardId,String loginUsername) {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new RuntimeException("카드가 존재하지 않습니다."));
 
@@ -50,6 +50,7 @@ public class CommentService {
                         .username(c.getMember().getUsername())
                         .content(c.getContent())
                         .createdAt(c.getCreatedAt())
+                        .isMine(loginUsername != null && loginUsername.equals(c.getMember().getUsername())) // 본인 댓글 체크!
                         .build())
                 .collect(Collectors.toList());
     }
@@ -65,4 +66,19 @@ public class CommentService {
 
         commentRepository.delete(comment);
     }
+
+
+    @Transactional
+    public void updateComment(Long commentId, String username, String newContent) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("댓글이 존재하지 않습니다."));
+
+        if (!comment.getMember().getUsername().equals(username)) {
+            throw new RuntimeException("수정 권한이 없습니다.");
+        }
+
+        comment.setContent(newContent); // JPA dirty checking
+    }
+
+
 }

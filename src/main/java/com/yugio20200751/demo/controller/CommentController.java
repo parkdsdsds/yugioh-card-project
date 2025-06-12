@@ -31,11 +31,12 @@ public class CommentController {
         return "redirect:/cards/" + cardId;
     }
 
-
-    // 댓글 조회 (비회원도 가능)
+    // 댓글 조회 (비회원도 가능) ← **이 함수만 남기세요!**
     @GetMapping
-    public ResponseEntity<List<CommentResponse>> getComments(@PathVariable Long cardId) {
-        List<CommentResponse> comments = commentService.getComments(cardId);
+    public ResponseEntity<List<CommentResponse>> getComments(
+            @PathVariable Long cardId, Authentication authentication) {
+        String loginUsername = (authentication != null) ? authentication.getName() : null;
+        List<CommentResponse> comments = commentService.getComments(cardId, loginUsername);
         return ResponseEntity.ok(comments);
     }
 
@@ -46,6 +47,17 @@ public class CommentController {
                                               Authentication authentication) {
         String username = authentication.getName();
         commentService.deleteComment(commentId, username);
+        return ResponseEntity.ok().build();
+    }
+
+    // 댓글 수정(작성자만)
+    @PutMapping("/{commentId}")
+    public ResponseEntity<Void> updateComment(@PathVariable Long cardId,
+                                              @PathVariable Long commentId,
+                                              @RequestBody CommentRequest request,
+                                              Authentication authentication) {
+        String username = authentication.getName();
+        commentService.updateComment(commentId, username, request.getContent());
         return ResponseEntity.ok().build();
     }
 }
