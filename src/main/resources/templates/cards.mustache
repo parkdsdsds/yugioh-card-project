@@ -2,8 +2,27 @@
 <html>
 <head>
     <title>카드 목록</title>
+    <style>
+        .nav {
+            position: absolute;
+            top: 16px;
+            right: 32px;
+        }
+    </style>
 </head>
 <body>
+<!-- 오른쪽 상단 네비게이션 -->
+<div class="nav">
+    {{#isAuthenticated}}
+        <form method="post" action="/logout" style="display:inline;">
+            <button type="submit">로그아웃</button>
+        </form>
+    {{/isAuthenticated}}
+    {{^isAuthenticated}}
+        <a href="/login"><button>로그인</button></a>
+    {{/isAuthenticated}}
+</div>
+
 <h1>유희왕 카드 목록</h1>
 
 {{#cards}}

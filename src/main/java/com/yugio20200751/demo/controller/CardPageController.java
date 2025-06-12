@@ -10,6 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
@@ -22,9 +24,15 @@ public class CardPageController {
 
 
     @GetMapping("/cards")
-    public String viewCards(Model model) {
+    public String viewCards(Model model,Authentication authentication) {
         List<Card> cards = cardService.getAllCards();
         model.addAttribute("cards", cards);
+        boolean isLoginUser = authentication != null
+                && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken);
+
+        model.addAttribute("isAuthenticated", isLoginUser);
+
         return "cards";  // templates/cards.mustache 렌더링
     }
     @GetMapping("/cards/{id}")
@@ -52,7 +60,12 @@ public class CardPageController {
         model.addAttribute("desc", card.getDesc());
         model.addAttribute("imageUrl", card.getImageUrl());
         model.addAttribute("comments", comments);
-        model.addAttribute("isAuthenticated", authentication != null && authentication.isAuthenticated());
+        boolean isLoginUser = authentication != null
+                && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken);
+        model.addAttribute("isAuthenticated", isLoginUser);
+
+
 
         return "cardDetail"; // → templates/cardDetail.mustache
     }

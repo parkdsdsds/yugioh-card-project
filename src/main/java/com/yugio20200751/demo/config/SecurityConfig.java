@@ -40,6 +40,11 @@ public class SecurityConfig {
                         .defaultSuccessUrl("/cards")
                         .permitAll()
                 )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/cards")
+                        .permitAll()
+                )
                 .authorizeHttpRequests(auth -> auth
                         // 회원가입/로그인(POST)은 모두 허용
                         .requestMatchers(HttpMethod.POST, "/api/members", "/api/auth/**").permitAll()
