@@ -4,125 +4,212 @@
     <meta charset="UTF-8">
     <title>{{name}} - 카드 상세 정보</title>
     <style>
-        body { font-family: sans-serif; margin: 2em; color: #333; }
-        .card-container { display: flex; flex-wrap: wrap; gap: 20px; }
-        .card-image img { max-width: 300px; border-radius: 10px; }
-        .card-info { max-width: 500px; }
-        .comment-form textarea, .edit-form textarea { width: 98%; padding: 5px; }
-        .comment { border-top: 1px solid #eee; padding: 15px 0; }
-        .comment-content, .edit-form { margin: 10px 0; }
-        .hidden { display: none; }
-        button { padding: 5px 10px; border: 1px solid #ccc; background-color: #f7f7f7; cursor: pointer; border-radius: 4px; }
-        button:hover { background-color: #e7e7e7; }
-        .actions button { margin-right: 5px; }
-
-        /* 목록으로 돌아가기 버튼 스타일 추가 */
-        .back-to-list-button {
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2em;
+        }
+        .header-logo {
             display: inline-block;
             margin-bottom: 20px;
-            padding: 8px 15px;
-            background-color: #6c757d;
-            color: white;
-            text-decoration: none;
+        }
+        .logo-image {
+            height: 50px;
+            width: auto;
+        }
+
+        /* 상세 페이지 핵심 레이아웃 */
+        .detail-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .detail-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        .detail-image {
+            flex-basis: 300px; /* 이미지 영역 너비 */
+            flex-shrink: 0;
+        }
+        .detail-image img {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+        .detail-info {
+            flex-grow: 1;
+        }
+        .detail-info h1 {
+            margin-top: 0;
+            font-size: 2em;
+        }
+        .info-item {
+            margin: 10px 0;
+            font-size: 1.1em;
+            color: #555;
+        }
+        .info-item strong {
+            color: #111;
+        }
+        .card-desc {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            line-height: 1.6;
+        }
+
+        /* 동적 별점 스타일 */
+        .star-rating-display {
+            --percent: calc( ({{averageScore}} / 5) * 100% );
+            display: inline-block;
+            font-size: 24px;
+            font-family: Times;
+            line-height: 1;
+        }
+        .star-rating-display::before {
+            content: '★★★★★';
+            letter-spacing: 3px;
+            background: linear-gradient(90deg, #ffc700 var(--percent), #d3d3d3 var(--percent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .rating-text {
+            vertical-align: top;
+            margin-left: 10px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* 댓글 및 폼 스타일 */
+        .comments-section, .rating-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+        }
+        .comment-form textarea, .edit-form textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 14px;
+            margin-bottom: 10px;
         }
-        .back-to-list-button:hover {
-            background-color: #5a6268;
+        .comment {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
         }
+        .hidden { display: none; }
+        button {
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+            background-color: #f7f7f7;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
     </style>
 </head>
 <body>
+<div class="container">
+    <a href="/cards" class="header-logo">
+        <img src="/images/yugioh-logo.png" alt="Yu-Gi-Oh! Logo" class="logo-image">
+    </a>
 
-<a href="/cards" class="back-to-list-button">← 목록으로 돌아가기</a>
-
-<h1>{{name}}</h1>
-
-<div class="card-container">
-    <div class="card-image">
-        <img src="{{imageUrl}}" alt="{{name}}">
-    </div>
-    <div class="card-info">
-        <p><strong>속성:</strong> {{attribute}} | <strong>종류:</strong> {{type}} | <strong>레벨:</strong> {{level}}</p>
-        <p><strong>평균 평점:</strong> <strong>{{averageScore}}</strong> / 5.0</p>
-        <hr>
-        <p><strong>효과:</strong><br>{{desc}}</p>
-    </div>
-</div>
-
-<hr>
-
-{{#isAuthenticated}}
-    <div>
-        <h3>평점 등록/수정</h3>
-        <form action="/api/cards/{{cardId}}/ratings" method="post">
-            <label for="rating-score">점수:</label>
-            <select name="score" id="rating-score" required>
-                <option value="5">★★★★★ (5점)</option>
-                <option value="4">★★★★☆ (4점)</option>
-                <option value="3">★★★☆☆ (3점)</option>
-                <option value="2">★★☆☆☆ (2점)</option>
-                <option value="1">★☆☆☆☆ (1점)</option>
-            </select>
-            <button type="submit">등록/수정</button>
-        </form>
-    </div>
-    <hr>
-{{/isAuthenticated}}
-
-
-<h2>댓글</h2>
-
-{{#isAuthenticated}}
-    <div class="comment-form">
-        <form action="/api/cards/{{cardId}}/comments" method="post">
-            <textarea name="content" rows="3" placeholder="댓글을 입력하세요..." required></textarea>
-            <button type="submit">댓글 작성</button>
-        </form>
-    </div>
-{{/isAuthenticated}}
-{{^isAuthenticated}}
-    <p><a href="/login">로그인</a> 후 댓글을 작성할 수 있습니다.</p>
-{{/isAuthenticated}}
-
-
-<div class="comments-list">
-    {{#comments}}
-        <div class="comment">
-            <p><strong>{{username}}</strong> <small>({{createdAt}})</small></p>
-
-            <div id="comment-view-{{id}}" class="comment-content">
-                <p>{{content}}</p>
+    <div class="detail-section">
+        <div class="detail-container">
+            <div class="detail-image">
+                <img src="{{imageUrl}}" alt="{{name}}">
             </div>
+            <div class="detail-info">
+                <h1>{{name}}</h1>
+                <p class="info-item"><strong>종류:</strong> {{type}}</p>
+                <p class="info-item"><strong>속성:</strong> {{attribute}} | <strong>레벨:</strong> {{level}}</p>
+                <div class="info-item">
+                    <strong>평균 평점:</strong>
+                    <div class="star-rating-display"></div>
+                    <span class="rating-text">{{averageScore}} / 5.0</span>
+                </div>
+                <div class="card-desc">
+                    <p>{{desc}}</p>
+                </div>
+            </div>
+        </div>
 
-            <div id="comment-edit-form-{{id}}" class="edit-form hidden">
-                <form action="/api/cards/{{cardId}}/comments/{{id}}/update" method="post">
-                    <textarea name="content" rows="3">{{content}}</textarea>
-                    <button type="submit">수정 완료</button>
-                    <button type="button" onclick="toggleEdit('{{id}}')">취소</button>
+        {{#isAuthenticated}}
+            <div class="rating-section">
+                <h3>평점 등록/수정</h3>
+                <form action="/api/cards/{{cardId}}/ratings" method="post">
+                    <label for="rating-score">점수:</label>
+                    <select name="score" id="rating-score" required>
+                        <option value="5">★★★★★ (5점)</option>
+                        <option value="4">★★★★☆ (4점)</option>
+                        <option value="3">★★★☆☆ (3점)</option>
+                        <option value="2">★★☆☆☆ (2점)</option>
+                        <option value="1">★☆☆☆☆ (1점)</option>
+                    </select>
+                    <button type="submit">등록/수정</button>
                 </form>
             </div>
+        {{/isAuthenticated}}
 
-            {{#isMine}}
-                <div class="actions">
-                    <button onclick="toggleEdit('{{id}}')">수정</button>
-                    <form action="/api/cards/{{cardId}}/comments/{{id}}/delete" method="post" style="display: inline;">
-                        <button type="submit" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</button>
+        <div class="comments-section">
+            <h2>댓글</h2>
+            {{#isAuthenticated}}
+                <div class="comment-form">
+                    <form action="/api/cards/{{cardId}}/comments" method="post">
+                        <textarea name="content" rows="3" placeholder="댓글을 입력하세요..." required></textarea>
+                        <button type="submit">댓글 작성</button>
                     </form>
                 </div>
-            {{/isMine}}
+            {{/isAuthenticated}}
+            {{^isAuthenticated}}
+                <p><a href="/login">로그인</a> 후 댓글을 작성할 수 있습니다.</p>
+            {{/isAuthenticated}}
+
+            <div class="comments-list">
+                {{#comments}}
+                    <div class="comment">
+                        <p><strong>{{username}}</strong> <small>({{createdAt}})</small></p>
+                        <div id="comment-view-{{id}}"><p>{{content}}</p></div>
+                        <div id="comment-edit-form-{{id}}" class="hidden">
+                            <form action="/api/cards/{{cardId}}/comments/{{id}}/update" method="post">
+                                <textarea name="content" rows="3">{{content}}</textarea>
+                                <button type="submit">수정 완료</button>
+                                <button type="button" onclick="toggleEdit('{{id}}')">취소</button>
+                            </form>
+                        </div>
+                        {{#isMine}}
+                            <div class="actions">
+                                <button onclick="toggleEdit('{{id}}')">수정</button>
+                                <form action="/api/cards/{{cardId}}/comments/{{id}}/delete" method="post" style="display: inline;"><button type="submit" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</button></form>
+                            </div>
+                        {{/isMine}}
+                    </div>
+                {{/comments}}
+                {{^comments}}
+                    <p>아직 댓글이 없습니다.</p>
+                {{/comments}}
+            </div>
         </div>
-    {{/comments}}
-    {{^comments}}
-        <p>아직 댓글이 없습니다.</p>
-    {{/comments}}
+    </div>
 </div>
 
 <script>
     function toggleEdit(commentId) {
         const viewDiv = document.getElementById('comment-view-' + commentId);
         const editFormDiv = document.getElementById('comment-edit-form-' + commentId);
-
         viewDiv.classList.toggle('hidden');
         editFormDiv.classList.toggle('hidden');
     }

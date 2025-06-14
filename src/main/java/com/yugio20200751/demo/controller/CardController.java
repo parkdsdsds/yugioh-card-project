@@ -38,5 +38,11 @@ public class CardController {
 
 
     }
+    // 이름으로 카드를 검색하는 API 엔드포인트
+    @GetMapping("/search")
+    public ResponseEntity<List<Card>> searchCardsByName(@RequestParam String name) {
+        List<Card> cards = cardService.searchCardsByName(name);
+        return ResponseEntity.ok(cards);
+    }
 
 }

@@ -44,6 +44,8 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // ▼▼▼ 여기에 정적 리소스 허용 규칙 추가 ▼▼▼
+                        .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                         // 회원가입/로그인(POST)은 모두 허용
                         .requestMatchers(HttpMethod.POST, "/api/members", "/api/auth/**").permitAll()
                         // 카드 목록, 카드 상세조회(GET)만 모두 허용
@@ -51,7 +53,7 @@ public class SecurityConfig {
                         // 평점 평균 조회 API(GET) 모두 허용
                         .requestMatchers(HttpMethod.GET, "/api/cards/*/ratings/average").permitAll()
                         // 로그인/에러 페이지는 모두 허용
-                        .requestMatchers("/login", "/error").permitAll()
+                        .requestMatchers("/login", "/error","/signup").permitAll()
                         // 그 외 모든 요청은 인증 필요!
                         .anyRequest().authenticated()
                 )

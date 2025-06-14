@@ -4,43 +4,118 @@
     <meta charset="UTF-8">
     <title>유희왕 카드 목록</title>
     <style>
-        body { font-family: sans-serif; margin: 2em; }
-        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-        .card-item { border: 1px solid #ddd; border-radius: 10px; overflow: hidden; text-align: center; }
-        .card-item img { max-width: 100%; height: auto; }
-        .card-item a { text-decoration: none; color: #333; }
-        .card-item p { margin: 10px; font-weight: bold; }
-        .header { display: flex; justify-content: space-between; align-items: center; }
-        .header-buttons button { margin-left: 10px; padding: 8px 12px; cursor: pointer; }
+        /* CSS 스타일은 이전과 동일 */
+        body { font-family: sans-serif; margin: 0; background-color: #f0f2f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2em; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #ddd; }
+        .logo-image { height: 50px; width: auto; }
+        .header-buttons button { margin-left: 10px; padding: 8px 12px; cursor: pointer; border: 1px solid #ddd; border-radius: 5px; background-color: white; }
+        .search-container { margin-bottom: 30px; display: flex; }
+        .search-container input[type="text"] { flex-grow: 1; padding: 12px; border: 1px solid #ccc; border-radius: 5px 0 0 5px; font-size: 16px; }
+        .search-container button { padding: 12px 20px; border: 1px solid #007bff; background-color: #007bff; color: white; cursor: pointer; border-radius: 0 5px 5px 0; font-size: 16px; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; }
+        .card-item { background-color: white; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; text-align: center; text-decoration: none; color: #333; transition: transform 0.2s, box-shadow 0.2s; }
+        .card-item:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        .card-item img { max-width: 100%; height: auto; background-color: #eee; }
+        .card-item-info { padding: 15px; }
+        .card-item-info p { margin: 0 0 10px 0; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .star-rating { display: inline-block; font-size: 18px; line-height: 1; }
+        .star-rating .stars { color: #f8ce0b; background: linear-gradient(90deg, #f8ce0b var(--percent), #d3d3d3 var(--percent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
 <body>
+<div class="container">
+    <div class="header">
+        <a href="/cards"><img src="/images/yugioh-logo.png" alt="Yu-Gi-Oh! Logo" class="logo-image"></a>
+        <div class="header-buttons">
+            {{#isAuthenticated}}
+                <form action="/logout" method="post" style="display:inline;"><button type="submit">로그아웃</button></form>
+            {{/isAuthenticated}}
+            {{^isAuthenticated}}
+                <a href="/login"><button>로그인</button></a>
+                <a href="/signup"><button>회원가입</button></a>
+            {{/isAuthenticated}}
+        </div>
+    </div>
 
-<div class="header">
-    <h1>유희왕 카드 목록</h1>
-    <div class="header-buttons">
-        {{#isAuthenticated}}
-            <form action="/logout" method="post" style="display:inline;">
-                <button type="submit">로그아웃</button>
-            </form>
-        {{/isAuthenticated}}
-        {{^isAuthenticated}}
-            <a href="/login"><button>로그인</button></a>
-            <a href="/signup"><button>회원가입</button></a>
-        {{/isAuthenticated}}
+    <form id="search-form" class="search-container">
+        <input type="text" id="search-input" placeholder="카드 이름으로 검색...">
+        <button type="submit">검색</button>
+    </form>
+
+    <div id="card-grid" class="card-grid">
+        {{#cards}}
+            <a href="/cards/{{card.id}}" class="card-item">
+                <img src="{{card.imageUrl}}" alt="{{card.name}}">
+                <div class="card-item-info">
+                    <p>{{card.name}}</p>
+                    <div class="star-rating" style="--percent: calc( ({{averageRating}} / 5) * 100% );">
+                        <span class="stars">★★★★★</span>
+                    </div>
+                </div>
+            </a>
+        {{/cards}}
     </div>
 </div>
 
-<div class="card-grid">
-    {{#cards}}
-        <div class="card-item">
-            <a href="/cards/{{id}}">
-                <img src="{{imageUrl}}" alt="{{name}}">
-                <p>{{name}}</p>
-            </a>
-        </div>
-    {{/cards}}
-</div>
+<script>
+    // 검색 기능 JavaScript
+    const searchForm = document.getElementById('search-form');
+    const searchInput = document.getElementById('search-input');
+    const cardGrid = document.getElementById('card-grid');
 
+    searchForm.addEventListener('submit', async function(event) {
+        event.preventDefault(); // 폼의 기본 제출 동작(새로고침) 방지
+        const query = searchInput.value;
+
+        if (!query) {
+            // 검색어가 없으면 전체 목록을 다시 보여주기 위해 페이지 새로고침
+            window.location.href = '/cards';
+            return;
+        }
+
+        try {
+            // 백엔드 검색 API 호출
+            const response = await fetch(`/api/cards/search?name=${encodeURIComponent(query)}`);
+            if (!response.ok) {
+                throw new Error('검색에 실패했습니다.');
+            }
+            const searchedCards = await response.json();
+
+            // 기존 카드 목록을 비우고 검색 결과로 채우기
+            renderCards(searchedCards);
+
+        } catch (error) {
+            console.error('Search error:', error);
+            alert(error.message);
+        }
+    });
+
+    // 카드 목록을 화면에 그리는 함수
+    function renderCards(cards) {
+        cardGrid.innerHTML = ''; // 기존 카드 목록 삭제
+        if (cards.length === 0) {
+            cardGrid.innerHTML = '<p>검색 결과가 없습니다.</p>';
+            return;
+        }
+
+        cards.forEach(card => {
+            // 검색 결과는 Card 엔티티이므로 DTO와 구조가 다름.
+            // 별점은 표시하지 않거나, 기본값으로 표시
+            const cardElement = `
+                <a href="/cards/${card.id}" class="card-item">
+                    <img src="${card.imageUrl}" alt="${card.name}">
+                    <div class="card-item-info">
+                        <p>${card.name}</p>
+                        <div class="star-rating">
+                            <span>☆</span><span>☆</span><span>☆</span><span>☆</span><span>☆</span>
+                        </div>
+                    </div>
+                </a>
+            `; //백틱()으로 문자열을 감싸면, 여러 줄에 걸쳐있는 긴 HTML 코드를 따옴표나 + 기호 없이도 아주 깔끔하게 작성할 수 있음 최신기술이래
+            cardGrid.insertAdjacentHTML('beforeend', cardElement);
+        });
+    }
+</script>
 </body>
 </html>
