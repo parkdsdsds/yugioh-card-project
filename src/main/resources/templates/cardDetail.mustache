@@ -15,9 +15,26 @@
         button { padding: 5px 10px; border: 1px solid #ccc; background-color: #f7f7f7; cursor: pointer; border-radius: 4px; }
         button:hover { background-color: #e7e7e7; }
         .actions button { margin-right: 5px; }
+
+        /* 목록으로 돌아가기 버튼 스타일 추가 */
+        .back-to-list-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 8px 15px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .back-to-list-button:hover {
+            background-color: #5a6268;
+        }
     </style>
 </head>
 <body>
+
+<a href="/cards" class="back-to-list-button">← 목록으로 돌아가기</a>
 
 <h1>{{name}}</h1>
 
@@ -53,6 +70,7 @@
     <hr>
 {{/isAuthenticated}}
 
+
 <h2>댓글</h2>
 
 {{#isAuthenticated}}
@@ -66,6 +84,7 @@
 {{^isAuthenticated}}
     <p><a href="/login">로그인</a> 후 댓글을 작성할 수 있습니다.</p>
 {{/isAuthenticated}}
+
 
 <div class="comments-list">
     {{#comments}}
@@ -100,7 +119,6 @@
 </div>
 
 <script>
-    // 댓글 수정 폼을 토글하는 간단한 스크립트
     function toggleEdit(commentId) {
         const viewDiv = document.getElementById('comment-view-' + commentId);
         const editFormDiv = document.getElementById('comment-edit-form-' + commentId);

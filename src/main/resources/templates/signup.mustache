@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>회원가입</title>
+    <style>
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f4; margin: 0; font-family: sans-serif; }
+        .signup-container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 320px; }
+        h2 { text-align: center; color: #333; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 5px; color: #555; }
+        .input-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; border: none; border-radius: 4px; background-color: #007bff; color: white; font-size: 16px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+
+<div class="signup-container">
+    <h2>Sign Up</h2>
+    <form id="signup-form">
+        <div class="input-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="input-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div class="input-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <div class="input-group">
+            <label for="confirm-password">Confirm Password</label>
+            <input type="password" id="confirm-password" name="confirm-password" required>
+        </div>
+        <button type="submit">Sign Up</button>
+    </form>
+</div>
+
+<script>
+    const signupForm = document.getElementById('signup-form');
+
+    signupForm.addEventListener('submit', async function (event) {
+        // 기본 폼 전송(페이지 새로고침)을 막습니다.
+        event.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        // 비밀번호와 비밀번호 확인 값이 일치하는지 검사합니다.
+        if (password !== confirmPassword) {
+            alert('비밀번호가 일치하지 않습니다.');
+            return;
+        }
+
+        // 백엔드 API로 보낼 회원가입 데이터 객체를 생성합니다.
+        const signupData = {
+            username: username,
+            email: email,
+            password: password
+        };
+
+        try {
+            // Fetch API를 사용해 백엔드에 POST 요청을 보냅니다.
+            // AuthController의 signup 메소드는 @RequestBody를 사용하므로 JSON 형식으로 보내야 합니다.
+            const response = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(signupData)
+            });
+
+            if (response.ok) {
+                alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
+                window.location.href = '/login'; // 성공 시 로그인 페이지로 이동
+            } else {
+                // 서버에서 보낸 에러 메시지 (예: "이미 존재하는 사용자입니다.")를 표시합니다.
+                const errorData = await response.json();
+                alert('회원가입 실패: ' + (errorData.error || '알 수 없는 오류가 발생했습니다.'));
+            }
+        } catch (error) {
+            // 네트워크 문제 등으로 요청 자체가 실패한 경우
+            console.error('Error:', error);
+            alert('요청 중 오류가 발생했습니다.');
+        }
+    });
+</script>
+
+</body>
+</html>

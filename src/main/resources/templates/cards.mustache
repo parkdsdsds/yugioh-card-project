@@ -1,44 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-    <title>카드 목록</title>
+    <meta charset="UTF-8">
+    <title>유희왕 카드 목록</title>
     <style>
-        .nav {
-            position: absolute;
-            top: 16px;
-            right: 32px;
-        }
+        body { font-family: sans-serif; margin: 2em; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .card-item { border: 1px solid #ddd; border-radius: 10px; overflow: hidden; text-align: center; }
+        .card-item img { max-width: 100%; height: auto; }
+        .card-item a { text-decoration: none; color: #333; }
+        .card-item p { margin: 10px; font-weight: bold; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        .header-buttons button { margin-left: 10px; padding: 8px 12px; cursor: pointer; }
     </style>
 </head>
 <body>
-<!-- 오른쪽 상단 네비게이션 -->
-<div class="nav">
-    {{#isAuthenticated}}
-        <form method="post" action="/logout" style="display:inline;">
-            <button type="submit">로그아웃</button>
-        </form>
-    {{/isAuthenticated}}
-    {{^isAuthenticated}}
-        <a href="/login"><button>로그인</button></a>
-    {{/isAuthenticated}}
+
+<div class="header">
+    <h1>유희왕 카드 목록</h1>
+    <div class="header-buttons">
+        {{#isAuthenticated}}
+            <form action="/logout" method="post" style="display:inline;">
+                <button type="submit">로그아웃</button>
+            </form>
+        {{/isAuthenticated}}
+        {{^isAuthenticated}}
+            <a href="/login"><button>로그인</button></a>
+            <a href="/signup"><button>회원가입</button></a>
+        {{/isAuthenticated}}
+    </div>
 </div>
 
-<h1>유희왕 카드 목록</h1>
-
-{{#cards}}
-    <a href="/cards/{{id}}" style="text-decoration: none; color: black;">
-        <div style="border: 1px solid #ccc; padding: 10px; margin: 10px;">
-            <img src="{{imageUrl}}" alt="{{name}}" style="width: 150px;"><br>
-            <strong>{{name}}</strong><br>
-            <span>Type: {{type}}</span><br>
-            <span style="font-size: 0.8em;">{{desc}}</span>
+<div class="card-grid">
+    {{#cards}}
+        <div class="card-item">
+            <a href="/cards/{{id}}">
+                <img src="{{imageUrl}}" alt="{{name}}">
+                <p>{{name}}</p>
+            </a>
         </div>
-    </a>
-{{/cards}}
-
-{{^cards}}
-    <p>📭 카드 없음</p>
-{{/cards}}
+    {{/cards}}
+</div>
 
 </body>
 </html>

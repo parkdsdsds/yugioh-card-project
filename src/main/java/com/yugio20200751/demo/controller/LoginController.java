@@ -10,4 +10,10 @@ public class LoginController {
     public String loginPage() {
         return "login";
     }
+
+
+    @GetMapping("/signup")
+    public String signupPage() {
+        return "signup"; // /resources/templates/signup.mustache 파일을 찾아 렌더링합니다.
+    }
 }
