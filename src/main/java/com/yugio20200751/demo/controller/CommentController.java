@@ -23,15 +23,12 @@ public class CommentController {
     public String addComment(@PathVariable Long cardId,
                              @ModelAttribute CommentRequest request,
                              Authentication authentication) {
-
         String username = authentication.getName();
         commentService.addComment(cardId, username, request);
-
-        // 댓글 작성 후 카드 상세 페이지로 리다이렉트
         return "redirect:/cards/" + cardId;
     }
 
-    // 댓글 조회 (비회원도 가능) ← **이 함수만 남기세요!**
+    // 댓글 조회 (이 메소드는 그대로 둡니다)
     @GetMapping
     public ResponseEntity<List<CommentResponse>> getComments(
             @PathVariable Long cardId, Authentication authentication) {
@@ -40,24 +37,24 @@ public class CommentController {
         return ResponseEntity.ok(comments);
     }
 
-    // 댓글 삭제 (작성자 본인만)
-    @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long cardId,
-                                              @PathVariable Long commentId,
-                                              Authentication authentication) {
+    // 댓글 삭제 (Form 전송을 위해 POST 방식으로 변경하고 리다이렉트)
+    @PostMapping("/{commentId}/delete")
+    public String deleteComment(@PathVariable Long cardId,
+                                @PathVariable Long commentId,
+                                Authentication authentication) {
         String username = authentication.getName();
         commentService.deleteComment(commentId, username);
-        return ResponseEntity.ok().build();
+        return "redirect:/cards/" + cardId;
     }
 
-    // 댓글 수정(작성자만)
-    @PutMapping("/{commentId}")
-    public ResponseEntity<Void> updateComment(@PathVariable Long cardId,
-                                              @PathVariable Long commentId,
-                                              @RequestBody CommentRequest request,
-                                              Authentication authentication) {
+    // 댓글 수정 (Form 전송을 위해 POST 방식으로 변경하고 리다이렉트)
+    @PostMapping("/{commentId}/update")
+    public String updateComment(@PathVariable Long cardId,
+                                @PathVariable Long commentId,
+                                @RequestParam String content, // RequestBody 대신 RequestParam 사용
+                                Authentication authentication) {
         String username = authentication.getName();
-        commentService.updateComment(commentId, username, request.getContent());
-        return ResponseEntity.ok().build();
+        commentService.updateComment(commentId, username, content);
+        return "redirect:/cards/" + cardId;
     }
 }

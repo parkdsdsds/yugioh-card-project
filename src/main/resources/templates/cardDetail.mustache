@@ -1,82 +1,114 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-    <title>{{name}}</title>
+    <meta charset="UTF-8">
+    <title>{{name}} - 카드 상세 정보</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; color: #333; }
+        .card-container { display: flex; flex-wrap: wrap; gap: 20px; }
+        .card-image img { max-width: 300px; border-radius: 10px; }
+        .card-info { max-width: 500px; }
+        .comment-form textarea, .edit-form textarea { width: 98%; padding: 5px; }
+        .comment { border-top: 1px solid #eee; padding: 15px 0; }
+        .comment-content, .edit-form { margin: 10px 0; }
+        .hidden { display: none; }
+        button { padding: 5px 10px; border: 1px solid #ccc; background-color: #f7f7f7; cursor: pointer; border-radius: 4px; }
+        button:hover { background-color: #e7e7e7; }
+        .actions button { margin-right: 5px; }
+    </style>
 </head>
 <body>
+
 <h1>{{name}}</h1>
-<img src="{{imageUrl}}" alt="{{name}}" style="width:200px;"><br>
-<p>속성: {{attribute}}</p>
-<p>타입: {{type}}</p>
-<p>레벨: {{level}}</p>
-<p>{{desc}}</p>
 
-<hr>
-<h2>댓글 목록</h2>
-
-{{#comments}}
-    <div style="border:1px solid #ccc; padding:10px; margin:5px;">
-        <strong>{{username}}</strong> - <em>{{createdAt}}</em><br>
-        {{content}}
-        {{#isMine}}
-            <!-- 본인 댓글만 수정/삭제 버튼 노출 -->
-            <button onclick="showEditForm({{id}}, '{{content}}')">수정</button>
-            <button onclick="deleteComment({{id}})">삭제</button>
-        {{/isMine}}
+<div class="card-container">
+    <div class="card-image">
+        <img src="{{imageUrl}}" alt="{{name}}">
     </div>
-{{/comments}}
-
-{{^comments}}
-    <p>📭 댓글이 아직 없습니다.</p>
-{{/comments}}
+    <div class="card-info">
+        <p><strong>속성:</strong> {{attribute}} | <strong>종류:</strong> {{type}} | <strong>레벨:</strong> {{level}}</p>
+        <p><strong>평균 평점:</strong> <strong>{{averageScore}}</strong> / 5.0</p>
+        <hr>
+        <p><strong>효과:</strong><br>{{desc}}</p>
+    </div>
+</div>
 
 <hr>
-<h2>댓글 작성</h2>
 
 {{#isAuthenticated}}
-    <form method="post" action="/api/cards/{{id}}/comments">
-        <textarea name="content" rows="4" cols="50" required></textarea><br>
-        <button type="submit">댓글 등록</button>
-    </form>
+    <div>
+        <h3>평점 등록/수정</h3>
+        <form action="/api/cards/{{cardId}}/ratings" method="post">
+            <label for="rating-score">점수:</label>
+            <select name="score" id="rating-score" required>
+                <option value="5">★★★★★ (5점)</option>
+                <option value="4">★★★★☆ (4점)</option>
+                <option value="3">★★★☆☆ (3점)</option>
+                <option value="2">★★☆☆☆ (2점)</option>
+                <option value="1">★☆☆☆☆ (1점)</option>
+            </select>
+            <button type="submit">등록/수정</button>
+        </form>
+    </div>
+    <hr>
 {{/isAuthenticated}}
 
-{{^isAuthenticated}}
-    <p>✍댓글 작성을 하려면 <a href="/login">로그인</a>이 필요합니다.</p>
+<h2>댓글</h2>
+
+{{#isAuthenticated}}
+    <div class="comment-form">
+        <form action="/api/cards/{{cardId}}/comments" method="post">
+            <textarea name="content" rows="3" placeholder="댓글을 입력하세요..." required></textarea>
+            <button type="submit">댓글 작성</button>
+        </form>
+    </div>
 {{/isAuthenticated}}
+{{^isAuthenticated}}
+    <p><a href="/login">로그인</a> 후 댓글을 작성할 수 있습니다.</p>
+{{/isAuthenticated}}
+
+<div class="comments-list">
+    {{#comments}}
+        <div class="comment">
+            <p><strong>{{username}}</strong> <small>({{createdAt}})</small></p>
+
+            <div id="comment-view-{{id}}" class="comment-content">
+                <p>{{content}}</p>
+            </div>
+
+            <div id="comment-edit-form-{{id}}" class="edit-form hidden">
+                <form action="/api/cards/{{cardId}}/comments/{{id}}/update" method="post">
+                    <textarea name="content" rows="3">{{content}}</textarea>
+                    <button type="submit">수정 완료</button>
+                    <button type="button" onclick="toggleEdit('{{id}}')">취소</button>
+                </form>
+            </div>
+
+            {{#isMine}}
+                <div class="actions">
+                    <button onclick="toggleEdit('{{id}}')">수정</button>
+                    <form action="/api/cards/{{cardId}}/comments/{{id}}/delete" method="post" style="display: inline;">
+                        <button type="submit" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</button>
+                    </form>
+                </div>
+            {{/isMine}}
+        </div>
+    {{/comments}}
+    {{^comments}}
+        <p>아직 댓글이 없습니다.</p>
+    {{/comments}}
+</div>
 
 <script>
-    function deleteComment(commentId) {
-        if (!confirm("정말 삭제하시겠습니까?")) return;
-        fetch(`/api/cards/{{id}}/comments/` + commentId, {
-            method: 'DELETE',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            credentials: 'include'
-        })
-                .then(res => {
-                    if(res.ok) window.location.reload();
-                    else alert("삭제 실패");
-                });
-    }
+    // 댓글 수정 폼을 토글하는 간단한 스크립트
+    function toggleEdit(commentId) {
+        const viewDiv = document.getElementById('comment-view-' + commentId);
+        const editFormDiv = document.getElementById('comment-edit-form-' + commentId);
 
-    function showEditForm(commentId, content) {
-        const newContent = prompt("댓글 수정", content);
-        if(newContent === null) return;
-        fetch(`/api/cards/{{id}}/comments/` + commentId, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            credentials: 'include',
-            body: JSON.stringify({content: newContent})
-        })
-                .then(res => {
-                    if(res.ok) window.location.reload();
-                    else alert("수정 실패");
-                });
+        viewDiv.classList.toggle('hidden');
+        editFormDiv.classList.toggle('hidden');
     }
 </script>
+
 </body>
 </html>

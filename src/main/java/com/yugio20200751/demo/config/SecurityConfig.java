@@ -6,8 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -50,12 +48,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/members", "/api/auth/**").permitAll()
                         // 카드 목록, 카드 상세조회(GET)만 모두 허용
                         .requestMatchers(HttpMethod.GET, "/api/cards", "/api/cards/**", "/cards", "/cards/**").permitAll()
+                        // 평점 평균 조회 API(GET) 모두 허용
+                        .requestMatchers(HttpMethod.GET, "/api/cards/*/ratings/average").permitAll()
                         // 로그인/에러 페이지는 모두 허용
                         .requestMatchers("/login", "/error").permitAll()
                         // 그 외 모든 요청은 인증 필요!
                         .anyRequest().authenticated()
                 )
-
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
